@@ -320,8 +320,9 @@ def generate_questions(api_key, question_type, difficulty, num_questions):
         genai.configure(api_key=api_key)
 
         try:
-            # Try with latest model first
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            return genai.GenerativeModel('gemini-1.5-flash')
+        except:
+            return genai.GenerativeModel('gemini-1.0-pro')
 
             # Enhanced prompt for better question quality
             prompt = f"""
