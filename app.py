@@ -263,39 +263,44 @@ if 'uploaded_files' not in st.session_state:
 
 def extract_text(file):
     try:
+        # Read file content once
+        file_bytes = file.getvalue()
+
         if file.type == "text/plain":
-            return file.getvalue().decode("utf-8")
-        
+            return file_bytes.decode("utf-8")
+
         elif file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
             from docx import Document
-            doc = Document(BytesIO(file.read()))
+            doc = Document(BytesIO(file_bytes))
             return "\n".join([para.text for para in doc.paragraphs])
-        
+
         elif file.type == "application/vnd.openxmlformats-officedocument.presentationml.presentation":
             from pptx import Presentation
-            prs = Presentation(BytesIO(file.read()))
+            prs = Presentation(BytesIO(file_bytes))
             text = []
             for slide in prs.slides:
                 for shape in slide.shapes:
                     if hasattr(shape, "text"):
                         text.append(shape.text)
             return "\n".join(text)
-        
+
         elif file.type == "application/pdf":
             import PyPDF2
-            pdf_reader = PyPDF2.PdfReader(BytesIO(file.read()))
+            pdf_reader = PyPDF2.PdfReader(BytesIO(file_bytes))
             text = ""
             for page in pdf_reader.pages:
-                text += page.extract_text() + "\n"
+                if page.extract_text():
+                    text += page.extract_text() + "\n"
             return text
-        
+
         else:
-            st.error("Unsupported file type")
+            st.error("❌ Unsupported file type")
             return ""
-    
+
     except Exception as e:
         st.error(f"Error processing file: {str(e)}")
         return ""
+
 
 def format_questions(raw_questions):
     """Format the questions with better spacing and styling"""
